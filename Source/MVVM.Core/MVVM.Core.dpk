@@ -28,7 +28,9 @@ package MVVM.Core;
 {$IMPLICITBUILD ON}
 
 requires
-  rtl,
+  Spring.Base,
+  Spring.Core,
+  Spring.Extensions,
   dbrtl;
 
 contains
@@ -37,10 +39,18 @@ contains
   MVVM.Core in 'Src\MVVM.Core.pas',
   MVVM.Types in 'Src\MVVM.Types.pas',
   MVVM.Bindings.Collections in 'Src\MVVM.Bindings.Collections.pas',
-  MVVM.Classes in 'Src\MVVM.Classes.pas',
   MVVM.Utils in 'Src\MVVM.Utils.pas',
   MVVM.Observable in 'Src\MVVM.Observable.pas',
   MVVM.ViewFactory in 'Src\MVVM.ViewFactory.pas',
-  MVVM.Bindings.Commands in 'Src\MVVM.Bindings.Commands.pas';
+  MVVM.Bindings.Commands in 'Src\MVVM.Bindings.Commands.pas',
+  MVVM.Attributes in 'Src\MVVM.Attributes.pas',
+  MVVM.Interfaces.Architectural in 'Src\MVVM.Interfaces.Architectural.pas',
+  MVVM.CommandFactory in 'Src\MVVM.CommandFactory.pas',
+  MVVM.Rtti in 'Src\MVVM.Rtti.pas',
+  MVVM.Messages.Engine in 'Src\MVVM.Messages.Engine.pas',
+  MonitorWaitStackFix in 'Src\MonitorWaitStackFix.pas',
+  MVVM.Messages.Engine.Scheduler in 'Src\MVVM.Messages.Engine.Scheduler.pas',
+  MVVM.Messages.Engine.Interfaces in 'Src\MVVM.Messages.Engine.Interfaces.pas',
+  MVVM.Patched.ThreadedQueue in 'Src\MVVM.Patched.ThreadedQueue.pas';
 
 end.

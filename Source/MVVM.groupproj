@@ -3,6 +3,15 @@
         <ProjectGuid>{B2BAB623-FC1E-4590-B104-5458BF8CE24C}</ProjectGuid>
     </PropertyGroup>
     <ItemGroup>
+        <Projects Include="..\ThirdParty\Spring4D\Packages\Delphi10Sydney\Spring.Base.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="..\ThirdParty\Spring4D\Packages\Delphi10Sydney\Spring.Core.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="..\ThirdParty\Spring4D\Packages\Delphi10Sydney\Spring.Extensions.dproj">
+            <Dependencies/>
+        </Projects>
         <Projects Include="MVVM.Core\MVVM.Core.dproj">
             <Dependencies/>
         </Projects>
@@ -24,6 +33,30 @@
         <Projects Include="..\Demos\CSV\CSV.FMX.Exe\App.CSV.FMX.dproj">
             <Dependencies/>
         </Projects>
+        <Projects Include="..\Demos\CRUD\CRUD.Core\CRUD.Core.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="..\Demos\CRUD\CRUD.FMX\CRUD.View.FMX.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="..\Demos\CRUD\CRUD.FMX.App\App.CRUD.FMX.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="..\Demos\CRUD\CRUD.FMX.NoPackage.App\App.CRUD.FMX.NoPackage.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="..\Demos\VM_Comunicacion\VM_Comunicacion.Core\VM_Comunicacion.Core.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="..\Demos\VM_Comunicacion\VM_Comunicacion.Views.FMX\VM_Comunicacion.Views.FMX.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="..\Demos\VM_Comunicacion\App.VM_Comunicacion.FMX.exe\App.VM_Comunicacion.FMX.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="..\Demos\CSV\CSV.FMX.NoPackage.Exe\App.CSV.FMX.NoPackages.dproj">
+            <Dependencies/>
+        </Projects>
         <Projects Include="..\Demos\MyTunes\FMX\MyTunesFMX.dproj">
             <Dependencies/>
         </Projects>
@@ -39,6 +72,9 @@
         <Projects Include="..\Demos\CSV\CSV.VCL.Exe\App.CSV.VCL.dproj">
             <Dependencies/>
         </Projects>
+        <Projects Include="D:\998.Test.Programacion\RTTI.Property\Sample.dproj">
+            <Dependencies/>
+        </Projects>
         <Projects Include="..\Demos\DataSet\DataSet.Core\DataSet.Core.dproj">
             <Dependencies/>
         </Projects>
@@ -48,7 +84,7 @@
         <Projects Include="..\Demos\DataSet\DataSet.FMX.App\App.DataSet.FMX.dproj">
             <Dependencies/>
         </Projects>
-        <Projects Include="D:\Mis Documentos\Embarcadero\Studio\Projects\Project62.dproj">
+        <Projects Include="..\Demos\Test-Messages\src\Test_Messages.dproj">
             <Dependencies/>
         </Projects>
     </ItemGroup>
@@ -59,6 +95,33 @@
             <Default.Personality/>
         </BorlandProject>
     </ProjectExtensions>
+    <Target Name="Spring_Base">
+        <MSBuild Projects="..\ThirdParty\Spring4D\Packages\Delphi10Sydney\Spring.Base.dproj"/>
+    </Target>
+    <Target Name="Spring_Base:Clean">
+        <MSBuild Projects="..\ThirdParty\Spring4D\Packages\Delphi10Sydney\Spring.Base.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="Spring_Base:Make">
+        <MSBuild Projects="..\ThirdParty\Spring4D\Packages\Delphi10Sydney\Spring.Base.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="Spring_Core">
+        <MSBuild Projects="..\ThirdParty\Spring4D\Packages\Delphi10Sydney\Spring.Core.dproj"/>
+    </Target>
+    <Target Name="Spring_Core:Clean">
+        <MSBuild Projects="..\ThirdParty\Spring4D\Packages\Delphi10Sydney\Spring.Core.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="Spring_Core:Make">
+        <MSBuild Projects="..\ThirdParty\Spring4D\Packages\Delphi10Sydney\Spring.Core.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="Spring_Extensions">
+        <MSBuild Projects="..\ThirdParty\Spring4D\Packages\Delphi10Sydney\Spring.Extensions.dproj"/>
+    </Target>
+    <Target Name="Spring_Extensions:Clean">
+        <MSBuild Projects="..\ThirdParty\Spring4D\Packages\Delphi10Sydney\Spring.Extensions.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="Spring_Extensions:Make">
+        <MSBuild Projects="..\ThirdParty\Spring4D\Packages\Delphi10Sydney\Spring.Extensions.dproj" Targets="Make"/>
+    </Target>
     <Target Name="MVVM_Core">
         <MSBuild Projects="MVVM.Core\MVVM.Core.dproj"/>
     </Target>
@@ -122,6 +185,78 @@
     <Target Name="App_CSV_FMX:Make">
         <MSBuild Projects="..\Demos\CSV\CSV.FMX.Exe\App.CSV.FMX.dproj" Targets="Make"/>
     </Target>
+    <Target Name="CRUD_Core">
+        <MSBuild Projects="..\Demos\CRUD\CRUD.Core\CRUD.Core.dproj"/>
+    </Target>
+    <Target Name="CRUD_Core:Clean">
+        <MSBuild Projects="..\Demos\CRUD\CRUD.Core\CRUD.Core.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="CRUD_Core:Make">
+        <MSBuild Projects="..\Demos\CRUD\CRUD.Core\CRUD.Core.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="CRUD_View_FMX">
+        <MSBuild Projects="..\Demos\CRUD\CRUD.FMX\CRUD.View.FMX.dproj"/>
+    </Target>
+    <Target Name="CRUD_View_FMX:Clean">
+        <MSBuild Projects="..\Demos\CRUD\CRUD.FMX\CRUD.View.FMX.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="CRUD_View_FMX:Make">
+        <MSBuild Projects="..\Demos\CRUD\CRUD.FMX\CRUD.View.FMX.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="App_CRUD_FMX">
+        <MSBuild Projects="..\Demos\CRUD\CRUD.FMX.App\App.CRUD.FMX.dproj"/>
+    </Target>
+    <Target Name="App_CRUD_FMX:Clean">
+        <MSBuild Projects="..\Demos\CRUD\CRUD.FMX.App\App.CRUD.FMX.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="App_CRUD_FMX:Make">
+        <MSBuild Projects="..\Demos\CRUD\CRUD.FMX.App\App.CRUD.FMX.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="App_CRUD_FMX_NoPackage">
+        <MSBuild Projects="..\Demos\CRUD\CRUD.FMX.NoPackage.App\App.CRUD.FMX.NoPackage.dproj"/>
+    </Target>
+    <Target Name="App_CRUD_FMX_NoPackage:Clean">
+        <MSBuild Projects="..\Demos\CRUD\CRUD.FMX.NoPackage.App\App.CRUD.FMX.NoPackage.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="App_CRUD_FMX_NoPackage:Make">
+        <MSBuild Projects="..\Demos\CRUD\CRUD.FMX.NoPackage.App\App.CRUD.FMX.NoPackage.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="VM_Comunicacion_Core">
+        <MSBuild Projects="..\Demos\VM_Comunicacion\VM_Comunicacion.Core\VM_Comunicacion.Core.dproj"/>
+    </Target>
+    <Target Name="VM_Comunicacion_Core:Clean">
+        <MSBuild Projects="..\Demos\VM_Comunicacion\VM_Comunicacion.Core\VM_Comunicacion.Core.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="VM_Comunicacion_Core:Make">
+        <MSBuild Projects="..\Demos\VM_Comunicacion\VM_Comunicacion.Core\VM_Comunicacion.Core.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="VM_Comunicacion_Views_FMX">
+        <MSBuild Projects="..\Demos\VM_Comunicacion\VM_Comunicacion.Views.FMX\VM_Comunicacion.Views.FMX.dproj"/>
+    </Target>
+    <Target Name="VM_Comunicacion_Views_FMX:Clean">
+        <MSBuild Projects="..\Demos\VM_Comunicacion\VM_Comunicacion.Views.FMX\VM_Comunicacion.Views.FMX.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="VM_Comunicacion_Views_FMX:Make">
+        <MSBuild Projects="..\Demos\VM_Comunicacion\VM_Comunicacion.Views.FMX\VM_Comunicacion.Views.FMX.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="App_VM_Comunicacion_FMX">
+        <MSBuild Projects="..\Demos\VM_Comunicacion\App.VM_Comunicacion.FMX.exe\App.VM_Comunicacion.FMX.dproj"/>
+    </Target>
+    <Target Name="App_VM_Comunicacion_FMX:Clean">
+        <MSBuild Projects="..\Demos\VM_Comunicacion\App.VM_Comunicacion.FMX.exe\App.VM_Comunicacion.FMX.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="App_VM_Comunicacion_FMX:Make">
+        <MSBuild Projects="..\Demos\VM_Comunicacion\App.VM_Comunicacion.FMX.exe\App.VM_Comunicacion.FMX.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="App_CSV_FMX_NoPackages">
+        <MSBuild Projects="..\Demos\CSV\CSV.FMX.NoPackage.Exe\App.CSV.FMX.NoPackages.dproj"/>
+    </Target>
+    <Target Name="App_CSV_FMX_NoPackages:Clean">
+        <MSBuild Projects="..\Demos\CSV\CSV.FMX.NoPackage.Exe\App.CSV.FMX.NoPackages.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="App_CSV_FMX_NoPackages:Make">
+        <MSBuild Projects="..\Demos\CSV\CSV.FMX.NoPackage.Exe\App.CSV.FMX.NoPackages.dproj" Targets="Make"/>
+    </Target>
     <Target Name="MyTunesFMX">
         <MSBuild Projects="..\Demos\MyTunes\FMX\MyTunesFMX.dproj"/>
     </Target>
@@ -167,6 +302,15 @@
     <Target Name="App_CSV_VCL:Make">
         <MSBuild Projects="..\Demos\CSV\CSV.VCL.Exe\App.CSV.VCL.dproj" Targets="Make"/>
     </Target>
+    <Target Name="Sample">
+        <MSBuild Projects="D:\998.Test.Programacion\RTTI.Property\Sample.dproj"/>
+    </Target>
+    <Target Name="Sample:Clean">
+        <MSBuild Projects="D:\998.Test.Programacion\RTTI.Property\Sample.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="Sample:Make">
+        <MSBuild Projects="D:\998.Test.Programacion\RTTI.Property\Sample.dproj" Targets="Make"/>
+    </Target>
     <Target Name="DataSet_Core">
         <MSBuild Projects="..\Demos\DataSet\DataSet.Core\DataSet.Core.dproj"/>
     </Target>
@@ -194,23 +338,23 @@
     <Target Name="App_DataSet_FMX:Make">
         <MSBuild Projects="..\Demos\DataSet\DataSet.FMX.App\App.DataSet.FMX.dproj" Targets="Make"/>
     </Target>
-    <Target Name="Project62">
-        <MSBuild Projects="D:\Mis Documentos\Embarcadero\Studio\Projects\Project62.dproj"/>
+    <Target Name="Test_Messages">
+        <MSBuild Projects="..\Demos\Test-Messages\src\Test_Messages.dproj"/>
     </Target>
-    <Target Name="Project62:Clean">
-        <MSBuild Projects="D:\Mis Documentos\Embarcadero\Studio\Projects\Project62.dproj" Targets="Clean"/>
+    <Target Name="Test_Messages:Clean">
+        <MSBuild Projects="..\Demos\Test-Messages\src\Test_Messages.dproj" Targets="Clean"/>
     </Target>
-    <Target Name="Project62:Make">
-        <MSBuild Projects="D:\Mis Documentos\Embarcadero\Studio\Projects\Project62.dproj" Targets="Make"/>
+    <Target Name="Test_Messages:Make">
+        <MSBuild Projects="..\Demos\Test-Messages\src\Test_Messages.dproj" Targets="Make"/>
     </Target>
     <Target Name="Build">
-        <CallTarget Targets="MVVM_Core;MVVM_Binding_LiveBindings;MVVM_Platform_FMX;MVVM_Binding_LiveBindings_FMX;CSV_Core;CSV_View_FMX;App_CSV_FMX;MyTunesFMX;MVVM_Platform_VCL;CSV_Core_DUnitX;CSV_View_VCL;App_CSV_VCL;DataSet_Core;DataSet_View_FMX;App_DataSet_FMX;Project62"/>
+        <CallTarget Targets="Spring_Base;Spring_Core;Spring_Extensions;MVVM_Core;MVVM_Binding_LiveBindings;MVVM_Platform_FMX;MVVM_Binding_LiveBindings_FMX;CSV_Core;CSV_View_FMX;App_CSV_FMX;CRUD_Core;CRUD_View_FMX;App_CRUD_FMX;App_CRUD_FMX_NoPackage;VM_Comunicacion_Core;VM_Comunicacion_Views_FMX;App_VM_Comunicacion_FMX;App_CSV_FMX_NoPackages;MyTunesFMX;MVVM_Platform_VCL;CSV_Core_DUnitX;CSV_View_VCL;App_CSV_VCL;Sample;DataSet_Core;DataSet_View_FMX;App_DataSet_FMX;Test_Messages"/>
     </Target>
     <Target Name="Clean">
-        <CallTarget Targets="MVVM_Core:Clean;MVVM_Binding_LiveBindings:Clean;MVVM_Platform_FMX:Clean;MVVM_Binding_LiveBindings_FMX:Clean;CSV_Core:Clean;CSV_View_FMX:Clean;App_CSV_FMX:Clean;MyTunesFMX:Clean;MVVM_Platform_VCL:Clean;CSV_Core_DUnitX:Clean;CSV_View_VCL:Clean;App_CSV_VCL:Clean;DataSet_Core:Clean;DataSet_View_FMX:Clean;App_DataSet_FMX:Clean;Project62:Clean"/>
+        <CallTarget Targets="Spring_Base:Clean;Spring_Core:Clean;Spring_Extensions:Clean;MVVM_Core:Clean;MVVM_Binding_LiveBindings:Clean;MVVM_Platform_FMX:Clean;MVVM_Binding_LiveBindings_FMX:Clean;CSV_Core:Clean;CSV_View_FMX:Clean;App_CSV_FMX:Clean;CRUD_Core:Clean;CRUD_View_FMX:Clean;App_CRUD_FMX:Clean;App_CRUD_FMX_NoPackage:Clean;VM_Comunicacion_Core:Clean;VM_Comunicacion_Views_FMX:Clean;App_VM_Comunicacion_FMX:Clean;App_CSV_FMX_NoPackages:Clean;MyTunesFMX:Clean;MVVM_Platform_VCL:Clean;CSV_Core_DUnitX:Clean;CSV_View_VCL:Clean;App_CSV_VCL:Clean;Sample:Clean;DataSet_Core:Clean;DataSet_View_FMX:Clean;App_DataSet_FMX:Clean;Test_Messages:Clean"/>
     </Target>
     <Target Name="Make">
-        <CallTarget Targets="MVVM_Core:Make;MVVM_Binding_LiveBindings:Make;MVVM_Platform_FMX:Make;MVVM_Binding_LiveBindings_FMX:Make;CSV_Core:Make;CSV_View_FMX:Make;App_CSV_FMX:Make;MyTunesFMX:Make;MVVM_Platform_VCL:Make;CSV_Core_DUnitX:Make;CSV_View_VCL:Make;App_CSV_VCL:Make;DataSet_Core:Make;DataSet_View_FMX:Make;App_DataSet_FMX:Make;Project62:Make"/>
+        <CallTarget Targets="Spring_Base:Make;Spring_Core:Make;Spring_Extensions:Make;MVVM_Core:Make;MVVM_Binding_LiveBindings:Make;MVVM_Platform_FMX:Make;MVVM_Binding_LiveBindings_FMX:Make;CSV_Core:Make;CSV_View_FMX:Make;App_CSV_FMX:Make;CRUD_Core:Make;CRUD_View_FMX:Make;App_CRUD_FMX:Make;App_CRUD_FMX_NoPackage:Make;VM_Comunicacion_Core:Make;VM_Comunicacion_Views_FMX:Make;App_VM_Comunicacion_FMX:Make;App_CSV_FMX_NoPackages:Make;MyTunesFMX:Make;MVVM_Platform_VCL:Make;CSV_Core_DUnitX:Make;CSV_View_VCL:Make;App_CSV_VCL:Make;Sample:Make;DataSet_Core:Make;DataSet_View_FMX:Make;App_DataSet_FMX:Make;Test_Messages:Make"/>
     </Target>
     <Import Project="$(BDS)\Bin\CodeGear.Group.Targets" Condition="Exists('$(BDS)\Bin\CodeGear.Group.Targets')"/>
 </Project>

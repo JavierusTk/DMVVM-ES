@@ -8,6 +8,7 @@ uses
 
   Spring,
   MVVM.Interfaces,
+  MVVM.Interfaces.Architectural,
   MVVM.Bindings;
 
 type
@@ -43,7 +44,7 @@ type
     property FileName: String read GetFileName write SetFileName;
   end;
 
-  IDataSetFile_View = Interface(IView<IDataSetFile_Model>)
+  IDataSetFile_View = Interface(IView<IDataSetFile_ViewModel>)
   ['{9D920DB3-9BD7-4712-8451-B3216A711C1F}']
     procedure RefreshData;
   end;

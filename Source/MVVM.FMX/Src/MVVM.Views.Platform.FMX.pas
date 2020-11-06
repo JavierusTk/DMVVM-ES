@@ -1,7 +1,4 @@
 unit MVVM.Views.Platform.FMX;
-
-{$HPPEMIT 'MVVM.Views.Platform.FMX'}
-
 interface
 
 uses
@@ -11,24 +8,22 @@ uses
   FMX.Forms,
   FMX.Objects,
 
-  MVVM.Interfaces,
+  MVVM.Interfaces.Architectural,
   MVVM.Core,
   MVVM.Bindings;
 
 type
-  TFrameView<T: IViewModel> = class(TFrame, IView, IView<T>)
+  TFrameView<T: IViewModel> = class abstract(TFrame, IView, IView<T>)
 {$REGION 'Internal Declarations'}
   private
     FBinder: TBindingManager;
     FViewModel: T;
   protected
-    function GetViewModel: T; virtual;
+    function GetViewModel: T;
+//    function GetVM_AsObject: K;
 {$ENDREGION 'Internal Declarations'}
   protected
     procedure SetupView; virtual;
-
-    { The view model associated with the view }
-    property ViewModel: T read GetViewModel;
   public
     procedure InitView(AViewModel: T);
   public
@@ -37,10 +32,12 @@ type
 
     function GetAsObject: TObject;
 
+    property ViewModel: T read GetViewModel;
+
     property Binder: TBindingManager read FBinder;
   end;
 
-  TFormView<T: IViewModel> = class(TForm, IView, IView<T>, IViewForm<T>)
+  TFormView<T: IViewModel> = class abstract(TForm, IView, IView<T>, IViewForm<T>)
 {$REGION 'Internal Declarations'}
   private
 {$IFNDEF MOBILE}
@@ -52,13 +49,11 @@ type
     FGrayOutPreviousForm: Boolean;
   protected
     procedure DoClose(var CloseAction: TCloseAction); override;
-    function GetViewModel: T; virtual;
+    function GetViewModel: T;
 {$ENDREGION 'Internal Declarations'}
   protected
     procedure SetupView; virtual;
-
-    { The view model associated with the view }
-    property ViewModel: T read GetViewModel;
+    procedure Loaded; override;
   public
     procedure InitView(AViewModel: T);
     procedure Execute;
@@ -70,7 +65,7 @@ type
     function GetAsObject: TObject;
 
     property GrayOutPreviousForm: Boolean read FGrayOutPreviousForm write FGrayOutPreviousForm;
-
+    property ViewModel: T read GetViewModel;
     property Binder: TBindingManager read FBinder;
   end;
 
@@ -79,7 +74,9 @@ implementation
 uses
   FMX.Graphics,
 
-  Spring;
+  Spring,
+
+  MVVM.Utils;
 
 { TFormView<T> }
 
@@ -159,20 +156,27 @@ end;
 
 function TFormView<T>.GetViewModel: T;
 begin
-  Result := FViewModel;
+  Result := TValue.From<TObject>(FViewModel.GetAsObject).AsType<T>;
 end;
 
 procedure TFormView<T>.InitView(AViewModel: T);
 begin
   Guard.CheckNotNull(AViewModel, 'The viewmodel cannot be nil');
-  Guard.CheckTrue(FViewModel = nil, 'The viewmodel is already assigned');
   FViewModel := AViewModel;
   SetupView;
 end;
 
+procedure TFormView<T>.Loaded;
+begin
+  inherited;
+  //FBinder.
+end;
+
 procedure TFormView<T>.SetupView;
 begin
-  //
+  //Utils.IdeDebugMsg('<TFormView<T>.SetupView>');
+  if Assigned(FViewModel) then
+    FViewModel.BindCommands(Self);
 end;
 
 { TFrameView<T> }
@@ -196,7 +200,7 @@ end;
 
 function TFrameView<T>.GetViewModel: T;
 begin
-  Result := FViewModel;
+  Result := TValue.From<IViewModel>(FViewModel).AsType<T>;
 end;
 
 procedure TFrameView<T>.InitView(AViewModel: T);
@@ -209,7 +213,9 @@ end;
 
 procedure TFrameView<T>.SetupView;
 begin
-  //
+  //Utils.IdeDebugMsg('<TFrameView<T>.SetupView>');
+  if Assigned(FViewModel) then
+    FViewModel.BindCommands(Self);
 end;
 
 end.

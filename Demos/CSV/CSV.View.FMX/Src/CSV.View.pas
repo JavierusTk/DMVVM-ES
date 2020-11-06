@@ -10,12 +10,15 @@ uses
 
   CSV.Interfaces,
 
-  MVVM.Interfaces,
+  MVVM.Attributes,
+  MVVM.Interfaces.Architectural,
   MVVM.Controls.Platform.FMX,
   MVVM.Views.Platform.FMX;
 
 type
-  TfrmCSV = class(TFormView<ICSVFile_ViewModel>, ICSVFile_View)
+  [View_For_ViewModel(ICSVFile_View_NAME, ICSVFile_ViewModel, 'WINDOWS_DESKTOP')]
+  [View_For_ViewModel(ICSVFile_View_NAME, ICSVFile_ViewModel, 'LINUX_DESKTOP')]
+  TfrmCSV = class(TFormView<ICSVFile_ViewModel>)
     Label1: TLabel;
     lePath: TEdit;
     btPath: TButton;
@@ -36,9 +39,13 @@ type
     DoNoParalelo: TAction;
     Button1: TButton;
     Button2: TButton;
+    Button3: TButton;
+    Button4: TButton;
     procedure Button1Click(Sender: TObject);
     procedure Button2Click(Sender: TObject);
     procedure DoSelectFileExecute(Sender: TObject);
+    procedure Button3Click(Sender: TObject);
+    procedure Button4Click(Sender: TObject);
   private
     { Private declarations }
   protected
@@ -63,20 +70,39 @@ uses
   MVVM.Core,
 
   CSV.ViewModel,
+
   Spring;
 
 {$R *.fmx}
 
 procedure TfrmCSV.Button1Click(Sender: TObject);
 begin
-  //MVVMCore.DisableBinding(DoCrearVista); no detecta la interface ???
-  DoCrearVista.Binding.Enabled := False;
+  MVVMCore.DisableBinding(DoCrearVista);
 end;
 
 procedure TfrmCSV.Button2Click(Sender: TObject);
 begin
-  //MVVMCore.EnableBinding(DoCrearVista); no detecta la interface ???
-  DoCrearVista.Binding.Enabled := True;
+  MVVMCore.EnableBinding(DoCrearVista);
+end;
+
+procedure TfrmCSV.Button3Click(Sender: TObject);
+begin
+  lePath.Free;
+end;
+
+procedure TfrmCSV.Button4Click(Sender: TObject);
+begin
+  lePath := TEdit.Create(Self);
+  lePath.Anchors := [TAnchorKind.akLeft, TAnchorKind.akTop, TAnchorKind.akRight];
+  lePath.Position.X := -4;
+  lePath.Position.Y := 16;
+  lePath.Size.Width := 405;
+  lePath.Size.Height := 22;
+  lePath.TextPrompt := 'Introduce el path';
+  label1.AddObject(lePath);
+
+  //bindings
+  Binder.Bind(TCSVFile_ViewModel(ViewModel), 'FileName', lePath, 'Text', EBindDirection.TwoWay, [EBindFlag.TargetTracking]);
 end;
 
 { TForm1 }
@@ -140,6 +166,6 @@ begin
 end;
 
 initialization
-  TViewFactory.Register(TfrmCSV, ICSVFile_View_NAME);
+  TfrmCSV.Classname; //as there should be no implicit create, we must do this so the rtti info of the class is included in the final exe
 
 end.

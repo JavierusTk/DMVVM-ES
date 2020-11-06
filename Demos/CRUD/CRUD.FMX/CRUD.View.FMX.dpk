@@ -1,0 +1,45 @@
+package CRUD.View.FMX;
+
+{$R *.res}
+{$IFDEF IMPLICITBUILDING This IFDEF should not be used by users}
+{$ALIGN 8}
+{$ASSERTIONS ON}
+{$BOOLEVAL OFF}
+{$DEBUGINFO OFF}
+{$EXTENDEDSYNTAX ON}
+{$IMPORTEDDATA ON}
+{$IOCHECKS ON}
+{$LOCALSYMBOLS ON}
+{$LONGSTRINGS ON}
+{$OPENSTRINGS ON}
+{$OPTIMIZATION OFF}
+{$OVERFLOWCHECKS OFF}
+{$RANGECHECKS OFF}
+{$REFERENCEINFO ON}
+{$SAFEDIVIDE OFF}
+{$STACKFRAMES ON}
+{$TYPEDADDRESS OFF}
+{$VARSTRINGCHECKS ON}
+{$WRITEABLECONST OFF}
+{$MINENUMSIZE 1}
+{$IMAGEBASE $400000}
+{$DEFINE DEBUG}
+{$ENDIF IMPLICITBUILDING}
+{$IMPLICITBUILD ON}
+
+requires
+  CRUD.Core,
+  MVVM.Platform.FMX,
+  MVVM.Binding.LiveBindings.FMX;
+
+contains
+  Personas.View.Desktop in 'Src\Personas.View.Desktop.pas' {frmPersonasDesktop},
+  New.Persona.View.Desktop in 'Src\New.Persona.View.Desktop.pas' {frmNewPersona},
+  Update.Persona.View.Desktop in 'Src\Update.Persona.View.Desktop.pas' {frmUpdatePersona},
+  Coches.View.Desktop.Grid in 'Src\Coches.View.Desktop.Grid.pas' {frmCochesDesktop},
+  New.Coche.View.Desktop in 'Src\New.Coche.View.Desktop.pas' {frmNewCoche},
+  Update.Coche.View.Desktop in 'Src\Update.Coche.View.Desktop.pas' {frmUpdateCoche},
+  Coches.View.Desktop.ListBox in 'Src\Coches.View.Desktop.ListBox.pas' {frmCochesMainLB},
+  Coches.View.Desktop.ListView in 'Src\Coches.View.Desktop.ListView.pas' {frmViewCochesLV};
+
+end.

@@ -14,6 +14,7 @@ uses
 // CBasicStrategies : array[EBasicStrategies] of String = ('RTTI', 'LIVEBINDINGS');
 
 type
+  // Bindings
   EBindDirection = (
     { Data flows in one direction, from the source (eg a view model) to a target
       (eg a control). }
@@ -49,37 +50,6 @@ type
 
   EBindFlags = set of EBindFlag;
 
-  TBindingValueConverter = class abstract
-  public
-    { Converts a property value from a data binding source to a property value
-      of for the data binding target.
-
-      This method gets called for OneWay data bindings from a source to a
-      target.
-
-      Parameters:
-      ASource: the property value of the data binding source.
-
-      Returns:
-      ASource converted for the target binding. }
-    class function ConvertSourceToTarget(const ASource: TValue): TValue; virtual; abstract;
-
-    { Converts a property value from a data binding target to a property value
-      for the data binding source.
-
-      This method gets called for TwoWay data bindings when the data flows in
-      the opposite direction (from target to source).
-
-      Parameters:
-      ATarget: the property value of the data binding target.
-
-      Returns:
-      ATarget converted for the source binding.
-
-      This method is optional. It returns ATarget by default. }
-    class function ConvertTargetToSource(const ATarget: TValue): TValue; virtual;
-  end;
-
   RSourcePair = record
   public
     Source: TObject;
@@ -88,23 +58,49 @@ type
 
   TSourcePairArray = TArray<RSourcePair>;
 
-  TBindingValueConverterClass = class of TBindingValueConverter;
-
   TBindExtraParams = TArray<TPair<String, String>>;
 
-  { Acciones Bindables } // DAVID: no me gusta como queda por las interfaces
-
+// Commands-Actions
   { The type of method to invoke when an IBindableAction is executed. }
   TExecuteRttiMethod = TRttiMethod;
   TExecuteAnonymous = TProc;
   TExecuteMethod = procedure of object;
-  // TExecuteMethod = procedure of Object;
+  TExecuteMethod<T> = procedure(const AArg: T) of object;
+  TCanExecuteRttiMethod = TRttiMethod;
+
+  TParam<T> = function: T of Object;
+  TParamRtti = TRttiMethod;
 
   { The type of method to invoke to check whether an IBindableAction can be
     executed. The Enabled property of the action will be set to the result of
     this function. }
   TCanExecuteMethod = function: boolean of object;
-  // TCanExecuteMethod = function:Boolean of object;
+
+  //Action members
+  EActionMemberType = (OnExecute, OnUpdate, OnAsyncExecutionFinished, OnParams);
+
+  ExceptionActionMemberTypeDuplicated = class(Exception);
+  ExceptionActionMemberTypeError = class(Exception);
+  ExceptionActionMemberNotFound = class(Exception);
+  ExceptionActionMemberNameCannotBeEmpty = class(Exception);
+
+  RActionMember = record
+    public
+      Name: String;
+      Caption: String;
+      MemberType: EActionMemberType;
+      Method: TRttiMethod;
+      Owner: TObject;
+  end;
+
+  RCommand = record
+    public
+      ExecuteName: String;
+      CanExecuteName: String;
+      ParamsName: String;
+      Field: TRttiField;
+      Owner: TObject;
+  end;
 
   TCollectionChangedAction = (
     { An item was added or inserted into the collection.
@@ -172,11 +168,146 @@ type
 
   EBindError = class(Exception);
 
+{$REGION 'TValueConverter'}
+
+  TValueConverter = class abstract
+  public
+    { Converts a property value from a data binding source to a property value
+      of for the data binding target.
+
+      This method gets called for OneWay data bindings from a source to a
+      target.
+
+      Parameters:
+      ASource: the property value of the data binding source.
+
+      Returns:
+      ASource converted for the target binding. }
+    class function ConvertSourceToTarget(const ASource: TValue): TValue; virtual; abstract;
+
+    { Converts a property value from a data binding target to a property value
+      for the data binding source.
+
+      This method gets called for TwoWay data bindings when the data flows in
+      the opposite direction (from target to source).
+
+      Parameters:
+      ATarget: the property value of the data binding target.
+
+      Returns:
+      ATarget converted for the source binding.
+
+      This method is optional. It returns ATarget by default. }
+    class function ConvertTargetToSource(const ATarget: TValue): TValue; virtual;
+  end;
+
+  TValueConverterClass = class of TValueConverter;
+{$ENDREGION}
+{$REGION 'TDataTemplate'}
+
+  { Abstract base template class that defines the mapping between properties of
+    each item in a collection and the corresponding item in the view.
+    For example, if the collection contains objects of type TCustomer, than you
+    can create a mapping between the customer name and the item title in the
+    view (by overriding the GetTitle method).
+    If the view is a TListBox for example, then the item title will
+    be assigned to the TListBoxItem.Text property.
+
+    You can pass the template to the TgoDataBinder.BindCollection method. }
+  TDataTemplate = class abstract
+  public
+    { Must be overridden to return the title of a given object.
+      This title will be used to fill the Text property of items in a TListBox
+      or TListView.
+
+      Parameters:
+      AItem: the object whose title to get. You need to typecast it to the
+      type of the objects in the collection (as passed to
+      TgoDataBinder.BindCollection).
+
+      Returns:
+      The title for this object. Should not be an empty string. }
+    class function GetTitle(const AItem: TObject): String; virtual; abstract;
+
+    { Returns some details of a given object.
+      These details will be used to fill the Details property of items in a
+      TListBox or TListView.
+
+      Parameters:
+      AItem: the object whose details to get. You need to typecast it to the
+      type of the objects in the collection (as passed to
+      TgoDataBinder.BindCollection).
+
+      Returns:
+      The details for this object.
+
+      Returns an empty string by default. }
+    class function GetDetail(const AItem: TObject): String; virtual;
+
+    { Returns the index of an image that represents a given object.
+      This index will be used to fill the ImageIndex property of items in a
+      TListBox or TListView.
+
+      Parameters:
+      AItem: the object whose image index to get. You need to typecast it to
+      the type of the objects in the collection (as passed to
+      TgoDataBinder.BindCollection).
+
+      Returns:
+      The image index for this object, or -1 if there is no image associated
+      with the object.
+
+      Returns -1 by default. }
+    class function GetID(const AItem: TObject): Integer; virtual; abstract;
+    class function GetImageIndex(const AItem: TObject): Integer; virtual;
+    class function GetStyle(const AItem: TObject): string; virtual;
+    class function GetParent(const AItem: TObject): TObject; virtual; abstract;
+    class function GetChildren(const AItem: TObject): TList<TObject>; virtual; abstract;
+  end;
+
+  TDataTemplateClass = class of TDataTemplate;
+{$ENDREGION}
+{$REGION 'TListBoxConversionData'}
+  TListBoxConversionData = record
+  public
+    DataSetField: String;
+    ListBoxField: String;
+    CustomFormat: String;
+
+    constructor Create(const ADataSetField: String; const AListBoxField: String; const ACustomFormat: String = '');
+  end;
+{$ENDREGION}
+{$REGION 'TListViewConversionData'}
+  TListViewConversionData = record
+  public
+    DataSetField : String;
+    ListViewField: String;
+    CustomFormat : String;
+    IsKeyField   : Boolean;
+
+    constructor Create(const ADataSetField: String; const AListViewField: String; const ACustomFormat: String = ''; const AIsKeyField: Boolean = False);
+  end;
+{$ENDREGION}
+{$REGION 'TGridColumnTemplate'}
+  TGridColumnTemplate = record
+  public
+    DataSetField: String;
+    HeaderText: String;
+    ReadOnly: boolean;
+    Width: Integer;
+    CustomFormat: String;
+    CustomParse: String;
+    ColumnStyle: String; // Posible values: ProgressColumn, CheckColumn, TimeColumn, DateColumn, PopupColumn, ImageColumn, CurrencyColumn, FloatColumn, IntegerColumn, GlyphColumn
+
+    constructor Create(const ADataSetField: String; const AHeaderText: String; const AReadOnly: boolean; const AWidth: Integer; const ACustomFormat: String; const ACustomParse: String; const AColumnStyle: String);
+  end;
+{$ENDREGION}
+
 implementation
 
-{ TBindingValueConverter }
+{ TValueConverter }
 
-class function TBindingValueConverter.ConvertTargetToSource(const ATarget: TValue): TValue;
+class function TValueConverter.ConvertTargetToSource(const ATarget: TValue): TValue;
 begin
   Result := ATarget;
 end;
@@ -189,6 +320,54 @@ begin
   FItem         := AItem;
   FItemIndex    := AItemIndex;
   FPropertyName := APropertyName;
+end;
+
+{ TDataTemplate }
+
+class function TDataTemplate.GetDetail(const AItem: TObject): String;
+begin
+  Result := '';
+end;
+
+class function TDataTemplate.GetImageIndex(const AItem: TObject): Integer;
+begin
+  Result := -1;
+end;
+
+class function TDataTemplate.GetStyle(const AItem: TObject): string;
+begin
+  Result := '';
+end;
+
+{ TGridColumnTemplate }
+
+constructor TGridColumnTemplate.Create(const ADataSetField, AHeaderText: String; const AReadOnly: boolean; const AWidth: Integer; const ACustomFormat, ACustomParse, AColumnStyle: String);
+begin
+  DataSetField := ADataSetField;
+  HeaderText   := AHeaderText;
+  ReadOnly     := AReadOnly;
+  Width        := AWidth;
+  CustomFormat := ACustomFormat;
+  CustomParse  := ACustomParse;
+  ColumnStyle  := AColumnStyle;
+end;
+
+{ TListBoxConversionData }
+constructor TListBoxConversionData.Create(const ADataSetField, AListBoxField, ACustomFormat: String);
+begin
+  DataSetField := ADataSetField;
+  ListBoxField := AListBoxField;
+  CustomFormat := ACustomFormat;
+end;
+
+{ TListViewConversionData }
+
+constructor TListViewConversionData.Create(const ADataSetField, AListViewField, ACustomFormat: String; const AIsKeyField: Boolean);
+begin
+  DataSetField  := ADataSetField;
+  ListViewField := AListViewField;
+  CustomFormat  := ACustomFormat;
+  IsKeyField    := AIsKeyField;
 end;
 
 end.

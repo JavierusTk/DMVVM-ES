@@ -1,12 +1,12 @@
 unit MVVM.Controls.Platform.FMX;
 
-{$HPPEMIT 'MVVM.Controls.Platform.FMX'}
-
 interface
 
 uses
+  System.SysUtils,
   System.Rtti,
   System.Classes,
+  System.Threading,
 
   FMX.Controls.Model,
   FMX.StdCtrls,
@@ -22,6 +22,7 @@ uses
   FMX.Objects,
   FMX.ActnList,
   FMX.TreeView,
+  FMX.Grid,
 
   MVVM.Interfaces,
   MVVM.Types;
@@ -109,40 +110,83 @@ type
 {$ENDREGION 'FMX.StdCtrls'}
 {$REGION 'FMX.ActnList'}
 
-  TAction = class(FMX.ActnList.TAction, IBindableAction)
+  TAction = class(FMX.ActnList.TAction, IBindableAction, IBindable)
 {$REGION 'Internal Declarations'}
   private
     FBinding: IBinding;
     FExecute: TExecuteMethod;
     FCanExecute: TCanExecuteMethod;
     FAnomExecute: TExecuteAnonymous;
-    FRttiExecute: TExecuteRttiMethod;
+
+    FRttiUsage            : Boolean;
+    FRttiExecute          : TExecuteRttiMethod;
+    FRttiExecuteObj       : TObject;
+    FRttiCanExecute       : TCanExecuteRttiMethod;
+    FRttiCanExecuteObj    : TObject;
+    FRttiParam            : TParamRtti;
+    FRttiParamObj         : TObject;
+    FRttiAfterExecuteDo   : TCanExecuteRttiMethod;
+    FRttiAfterExecuteDoObj: TObject;
+
+    FAfterExecuteDo: TProc<Boolean>;
+    FTask          : ITask;
+
+    FAsyncExecution: Boolean;
+    FTimeOut       : Integer;
+
+    FLastCanExecute: Boolean;
+    FCanExecuteChangedEvent: ICanExecuteChangedEvent;
   protected
     procedure DoExecuteAnonymous;
     procedure DoExecuteRtti;
 
     function GetBinding: IBinding;
     procedure SetBinding(ABinding: IBinding);
+
+    function GetAsyncExecution: Boolean;
+     procedure SetAsyncExecution(const AValue: Boolean);
+
+    function GetCanExecuteChanged: ICanExecuteChangedEvent;
 {$ENDREGION 'Internal Declarations'}
   public
+    procedure CancelAsyncExecution;
+
     { IBindableAction }
     procedure Bind(const AExecute: TExecuteMethod;
-                   const ACanExecute: TCanExecuteMethod = nil;
-                   const AEstrategiaBinding: String = ''); overload;
+                   const ACanExecute: TCanExecuteMethod = nil); overload;
+    procedure Bind<T>(const AExecute: TExecuteMethod<T>; const AParam: TParam<T>;
+                      const ACanExecute: TCanExecuteMethod = nil); overload;
     procedure Bind(const AExecute: TExecuteAnonymous;
-                   const ACanExecute: TCanExecuteMethod = nil;
-                   const ABindingStrategy: String = ''); overload;
-    procedure Bind(const AExecute: TExecuteRttiMethod;
-                   const ACanExecute: TCanExecuteMethod = nil;
-                   const ABindingStrategy: String = ''); overload;
+                   const ACanExecute: TCanExecuteMethod = nil); overload;
+    procedure Bind(const AExecute: TExecuteRttiMethod; const AExecuteObj: TObject;
+                   const ACanExecute: TCanExecuteRttiMethod = nil; const ACanExecuteObj: TObject = nil;
+                   const AParams: TParamRtti = nil; const AParamObj: TObject = nil); overload;
+
+    procedure BindAsync(const AExecute: TExecuteMethod;
+                        const ACanExecute: TCanExecuteMethod = nil;
+                        const AfterExecuteDo: TProc<Boolean> = nil;
+                        const ATimeOut: Integer = Integer.MaxValue); overload;
+    procedure BindAsync<T>(const AExecute: TExecuteMethod<T>; const AParam: TParam<T>;
+                           const ACanExecute: TCanExecuteMethod = nil;
+                           const AfterExecuteDo: TProc<Boolean> = nil;
+                           const ATimeOut: Integer = Integer.MaxValue); overload;
+    procedure BindAsync(const AExecute: TExecuteAnonymous;
+                        const ACanExecute: TCanExecuteMethod = nil;
+                        const AfterExecuteDo: TProc<Boolean> = nil;
+                        const ATimeOut: Integer = Integer.MaxValue); overload;
+    procedure BindAsync(const AExecute: TExecuteRttiMethod;
+                        const ACanExecute: TCanExecuteMethod = nil;
+                        const AfterExecuteDo: TProc<Boolean> = nil;
+                        const ATimeOut: Integer = Integer.MaxValue); overload;
   public
     constructor Create(AOwner: TComponent); override;
     function Update: Boolean; override;
     function Execute: Boolean; override;
 
     property Binding: IBinding read GetBinding write SetBinding;
+    property OnCanExecuteChanged: ICanExecuteChangedEvent read GetCanExecuteChanged;
+    property AsyncExecution: Boolean read GetAsyncExecution write SetAsyncExecution;
   end;
-
 {$ENDREGION 'FMX.ActnList'}
 {$REGION 'FMX.Edit'}
 
@@ -474,8 +518,8 @@ type
       read GetOnPropertyChangedEvent;
   end;
 {$ENDREGION 'FMX.NumberBox'}
-{$REGION 'FMX.ListBox'}
 
+{$REGION 'FMX.ListBox'}
 type
   { TListBox with support for light-weight two-way data binding.
     Supports property changed notifications for: ItemIndex, Selected, SelectedItem.
@@ -528,6 +572,7 @@ type
     to store the associated object. This is an unsafe reference, so you
     must make sure that the associated objects are available for the
     lifetime of the list view. }
+(*
   TListView = class(FMX.ListView.TListView, ICollectionViewProvider,
     INotifyChangedProperty)
 {$REGION 'Internal Declarations'}
@@ -563,6 +608,7 @@ type
     property OnPropertyChangedEvent: IChangedPropertyEvent
       read GetOnPropertyChangedEvent;
   end;
+*)
 {$ENDREGION 'FMX.ListView'}
 {$REGION 'FMX.Objects'}
 
@@ -671,6 +717,13 @@ type
   end;
 {$ENDREGION 'FMX.ComboBox'}
 
+{$REGION 'TGrid'}
+(*  TGrid = class(FMX.Grid.TGrid)
+
+  end;
+*)
+{$ENDREGION}
+
 implementation
 
 uses
@@ -680,6 +733,7 @@ uses
 
   Spring,
 
+  MVVM.Utils,
   MVVM.Bindings.Collections;
 
 type
@@ -733,6 +787,7 @@ type
     constructor Create(const AListBox: TListBox);
   end;
 
+(*
   TListViewCollectionView = class(TCollectionView)
   private
     [weak]
@@ -754,6 +809,7 @@ type
   public
     constructor Create(const AListView: TListView);
   end;
+*)
 
   TTreeViewCollectionView = class(TCollectionView)
   private
@@ -796,31 +852,98 @@ type
 
 { TAction }
 
-procedure TAction.Bind(const AExecute: TExecuteMethod;
-  const ACanExecute: TCanExecuteMethod; const AEstrategiaBinding: String);
+procedure TAction.Bind(const AExecute: TExecuteMethod; const ACanExecute: TCanExecuteMethod);
 begin
+  FExecute    := AExecute;
+  FCanExecute := ACanExecute;
+  FRttiUsage  := False;
+end;
+
+procedure TAction.Bind(const AExecute: TExecuteRttiMethod; const AExecuteObj: TObject;
+                       const ACanExecute: TCanExecuteRttiMethod; const ACanExecuteObj: TObject;
+                       const AParams: TParamRtti; const AParamObj: TObject);
+begin
+  FExecute           := DoExecuteRtti;
+  FRttiExecuteObj    := AExecuteObj;
+  FRttiExecute       := AExecute;
+  FRttiCanExecuteObj := ACanExecuteObj;
+  FRttiCanExecute    := ACanExecute;
+  FRttiParam         := AParams;
+  FRttiParamObj      := AParamObj;
+  FRttiUsage         := True;
+end;
+
+procedure TAction.Bind(const AExecute: TExecuteAnonymous; const ACanExecute: TCanExecuteMethod);
+begin
+  FExecute    := DoExecuteAnonymous;
+  FAnomExecute:= AExecute;
+  FCanExecute := ACanExecute;
+  FRttiUsage  := False;
+end;
+
+procedure TAction.Bind<T>(const AExecute: TExecuteMethod<T>; const AParam: TParam<T>; const ACanExecute: TCanExecuteMethod);
+begin
+  FExecute     := DoExecuteAnonymous;
+  FAnomExecute := procedure
+                  begin
+                    AExecute(AParam);
+                  end;
+  FCanExecute  := ACanExecute;
+  FRttiUsage   := False;
+end;
+
+procedure TAction.BindAsync(const AExecute: TExecuteMethod; const ACanExecute: TCanExecuteMethod; const AfterExecuteDo: TProc<Boolean>; const ATimeOut: Integer);
+begin
+  FAsyncExecution := True;
+  FTimeOut := ATimeOut;
   FExecute    := AExecute;
   FCanExecute := ACanExecute;
 end;
 
-procedure TAction.Bind(const AExecute: TExecuteRttiMethod;
-  const ACanExecute: TCanExecuteMethod; const ABindingStrategy: String);
+procedure TAction.BindAsync(const AExecute: TExecuteAnonymous; const ACanExecute: TCanExecuteMethod; const AfterExecuteDo: TProc<Boolean>; const ATimeOut: Integer);
 begin
-  FExecute    := DoExecuteRtti;
+  FAsyncExecution := True;
+  FTimeOut    := ATimeOut;
+  FExecute    := DoExecuteAnonymous;
+  FAnomExecute:= AExecute;
   FCanExecute := ACanExecute;
 end;
 
-procedure TAction.Bind(const AExecute: TExecuteAnonymous;
-  const ACanExecute: TCanExecuteMethod; const ABindingStrategy: String);
+procedure TAction.BindAsync(const AExecute: TExecuteRttiMethod; const ACanExecute: TCanExecuteMethod; const AfterExecuteDo: TProc<Boolean>; const ATimeOut: Integer);
 begin
-  FExecute    := DoExecuteAnonymous;
+  FAsyncExecution := True;
+  FTimeOut := ATimeOut;
+  FExecute    := DoExecuteRtti;
+  FRttiExecute:= AExecute;
   FCanExecute := ACanExecute;
+end;
+
+procedure TAction.BindAsync<T>(const AExecute: TExecuteMethod<T>; const AParam: TParam<T>; const ACanExecute: TCanExecuteMethod; const AfterExecuteDo: TProc<Boolean>; const ATimeOut: Integer);
+begin
+  FAsyncExecution := True;
+  FTimeOut := ATimeOut;
+  FExecute     := DoExecuteAnonymous;
+  FAnomExecute := procedure
+                  begin
+                    AExecute(AParam);
+                  end;
+  FCanExecute  := ACanExecute;
+end;
+
+procedure TAction.CancelAsyncExecution;
+begin
+  if Assigned(FTask) then
+    FTask.Cancel;
 end;
 
 constructor TAction.Create(AOwner: TComponent);
 begin
   inherited;
   DisableIfNoHandler := False;
+  FLastCanExecute    := True;
+
+  FRttiUsage      := False;
+  FAsyncExecution := False;
 end;
 
 procedure TAction.DoExecuteAnonymous;
@@ -830,9 +953,24 @@ begin
 end;
 
 procedure TAction.DoExecuteRtti;
+var
+  LProc: TExecuteMethod;
+  LValue: TValue;
+  LRes: Boolean;
 begin
   if Assigned(FRttiExecute) then
-    FRttiExecute.Invoke(Self.Owner, []);
+  begin
+    if Assigned(FRttiParam) then
+      FRttiExecute.Invoke(fRttiExecuteObj, [FRttiParam.Invoke(FRttiParamObj, [])])
+    else begin
+           LValue := FRttiExecute.Invoke(fRttiExecuteObj, []);
+           if not LValue.IsObject then
+           begin
+             LProc  := LValue.AsType<TExecuteMethod>();
+             LProc;
+           end;
+         end;
+  end;
 end;
 
 function TAction.Execute: Boolean;
@@ -841,13 +979,54 @@ begin
   if (Supported) and (not Suspended) and (Enabled) then
   begin
     if Assigned(FExecute) then
-      FExecute();
+    begin
+      case FAsyncExecution of
+        True:
+          begin
+            TThread.CreateAnonymousThread(
+              procedure
+              var
+                LRes : Boolean;
+              begin
+                FTask := TTask.Create(FExecute).Start;
+                LRes  := FTask.Wait(FTimeOut);
+                FTask := nil;
+                TThread.Queue(nil,
+                  procedure
+                  begin
+                    FAfterExecuteDo(LRes);
+                  end);
+              end).Start;
+          end;
+        False:
+          begin
+            FExecute();
+          end;
+      end;
+    end;
   end;
+end;
+
+function TAction.GetAsyncExecution: Boolean;
+begin
+  Result := FAsyncExecution
 end;
 
 function TAction.GetBinding: IBinding;
 begin
   Result := FBinding;
+end;
+
+function TAction.GetCanExecuteChanged: ICanExecuteChangedEvent;
+begin
+  if not Assigned(FCanExecuteChangedEvent) then
+    FCanExecuteChangedEvent := Utils.CreateEvent<TCanExecuteChangedEvent>;
+  Result := FCanExecuteChangedEvent;
+end;
+
+procedure TAction.SetAsyncExecution(const AValue: Boolean);
+begin
+  FAsyncExecution := AValue
 end;
 
 procedure TAction.SetBinding(ABinding: IBinding);
@@ -856,10 +1035,41 @@ begin
 end;
 
 function TAction.Update: Boolean;
+var
+  LFunc : TCanExecuteMethod;
+  LValue: TValue;
+  LEnabled: Boolean;
 begin
   Result := inherited Update;
-  if (Supported) and Assigned(FCanExecute) then
-    Enabled := FCanExecute();
+  if (Supported) then
+  begin
+    case FRttiUsage of
+      True:
+        begin
+         if Assigned(FRttiCanExecute) then
+         begin
+           LValue := FRttiCanExecute.Invoke(FRttiCanExecuteObj, []);
+           if not LValue.TryAsType<Boolean>(LEnabled) then
+           begin
+             LFunc  := LValue.AsType<TCanExecuteMethod>();
+             Enabled:= LFunc;
+           end
+           else Enabled := LEnabled;
+         end;
+        end;
+      False:
+        begin
+          if Assigned(FCanExecute) then
+            Enabled := FCanExecute();
+        end;
+    end;
+  end;
+  if Enabled <> FLastCanExecute then
+  begin
+    FLastCanExecute := Enabled;
+    if Assigned(FCanExecuteChangedEvent) then
+      FCanExecuteChangedEvent.Invoke(Self, FLastCanExecute);
+  end;
 end;
 
 { TCheckBox }
@@ -1616,7 +1826,6 @@ begin
 end;
 
 { TListBox }
-
 procedure TListBox.Clear;
 begin
   if (Count > 0) then
@@ -1710,7 +1919,6 @@ begin
 end;
 
 { TListBoxCollectionView }
-
 procedure TListBoxCollectionView.AddItemToView(const AItem: TObject);
 var
   ListBox: TListBox;
@@ -1817,9 +2025,8 @@ begin
   AListBoxItem.Data := AItem;
   AListBoxItem.StyleLookup := Template.GetStyle(AItem);
 end;
-
 { TListView }
-
+(*
 destructor TListView.Destroy;
 begin
   FView := nil;
@@ -2003,7 +2210,7 @@ begin
   AListViewItem.ImageIndex := Template.GetImageIndex(AItem);
   AListViewItem.Tag := NativeInt(AItem);
 end;
-
+*)
 { TImage }
 
 procedure TImage.DoChanged;
